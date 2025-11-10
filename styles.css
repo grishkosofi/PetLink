@@ -130,10 +130,6 @@ html,body{ height:100%; margin:0; background:var(--page-bg); color:#222; -webkit
 }
 .hp-logo-mark { display:flex; align-items:center; justify-content:center; width:44px; height:44px; }.hp-logo-text{ font-weight:800; font-size:22px; color:#111; }
 
-@media(max-width:500px){
-  .hp-card-icon-img{ width:46px; height:46px; }
-}
-
 /* user on right */
 .hp-user{ display:flex; align-items:center; gap:12px; cursor:pointer; }
 .hp-user-name{ font-weight:700; color:#1d1d1d; margin-right:6px; }
