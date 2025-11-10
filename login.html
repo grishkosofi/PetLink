@@ -1,0 +1,61 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PetLink — Log In</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="page">
+  <section class="hero">
+    <!-- Reuse same SVG background visuals -->
+    <svg class="hero-bg" viewBox="0 0 1400 800" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="g1L" x1="0" x2="1">
+          <stop offset="0" stop-color="#ff7f98"/>
+          <stop offset="0.5" stop-color="#fff"/>
+          <stop offset="1" stop-color="#9fe8d7"/>
+        </linearGradient>
+      </defs>
+      <rect width="1400" height="240" fill="url(#g1L)"/>
+      <path d="M1400,220 C1000,120 800,120 700,160 C600,200 400,200 0,140 L0,800 L1400,800 Z" fill="#f08aa2" opacity="0.95"/>
+      <path d="M1400,320 C1000,260 800,260 700,300 C600,340 400,340 0,280 L0,800 L1400,800 Z" fill="#ffdfe3" opacity="0.9"/>
+      <path d="M1400,420 C1000,360 800,360 700,400 C600,440 400,440 0,380 L0,800 L1400,800 Z" fill="#9fe8d7" opacity="0.98"/>
+    </svg>
+
+    <header class="brand">
+      <div class="logo">PetLink<span class="rtm">®</span></div>
+    </header>
+
+    <main class="card-wrap" role="main">
+      <article class="card form-card" aria-labelledby="loginTitle">
+        <h1 id="loginTitle"><span class="paw">🐾</span> Welcome to <span class="petlink">PetLink</span><span class="paw">🐾</span></h1>
+        <p class="subtitle">Link every moment of your pet's journey!</p>
+
+        <form id="loginForm" class="form">
+          <label class="sr" for="email">Email address</label>
+          <input id="email" name="email" type="email" placeholder="Email address" required />
+
+          <label class="sr" for="password">Password</label>
+          <input id="password" name="password" type="password" placeholder="Password" required />
+
+          <button type="submit" class="btn btn-pink full">Log in</button>
+
+          <div class="or">or</div>
+
+          <button type="button" id="gotoSignup" class="btn btn-yellow full">Sign in</button>
+        </form>
+
+        <p class="tiny">By creating an account, you agree to our <a href="#" class="muted">Terms of Service</a> and <a href="#" class="muted">Privacy Policy</a>.</p>
+      </article>
+    </main>
+
+    <footer class="foot">All rights reserved</footer>
+  </section>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

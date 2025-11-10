@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PetLink — Home</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="hp-page">
+    <header class="hp-header">
+      <div class="hp-brand">
+        <div class="hp-logo">
+          <div class="hp-logo-mark">🐶🐱</div>
+          <div class="hp-logo-text">PetLink</div>
+        </div>
+      </div>
+
+      <div class="hp-user" id="hpUser" role="button" aria-haspopup="true" aria-expanded="false">
+        <div class="hp-user-name" id="userName">Name_of_user</div>
+        <div class="hp-avatar" id="hpAvatar" title="Profile">👤</div>
+      </div>
+    </header>
+
+    <main class="hp-main" role="main">
+      <section class="hp-content">
+        <div class="hp-grid">
+          <button class="hp-card hp-card-large" id="createPet">
+            <div class="hp-card-icon">➕</div>
+            <div class="hp-card-title">Create Pet Profile</div>
+          </button>
+
+          <button class="hp-card hp-card-large" id="myPets">
+            <div class="hp-card-icon">🐾</div>
+            <div class="hp-card-title">My Pets</div>
+          </button>
+
+          <button class="hp-card hp-card-large" id="dailyCare">
+            <div class="hp-card-icon">🔔</div>
+            <div class="hp-card-title hp-yellow">Daily Care</div>
+          </button>
+        </div>
+
+        <div class="hp-nextcare-wrap">
+          <div class="hp-nextcare">
+            <div class="hp-nextcare-title">Next care today</div>
+            <div class="hp-nextcare-body">
+              <div class="hp-nextcare-left">
+                <div class="hp-nextcare-icon">🍲</div>
+              </div>
+              <div class="hp-nextcare-main">
+                <div class="hp-nextcare-name" id="nextCareName">Feeding</div>
+                <div class="hp-nextcare-time" id="nextCareTime">9 am</div>
+              </div>
+              <div class="hp-nextcare-right">
+                <button class="hp-nextcare-ok" id="dismissCare" title="Dismiss">✕</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hp-lovecare">
+          <h2>Love & Care</h2>
+          <p class="tiny">All rights reserved</p>
+        </div>
+      </section>
+    </main>
+
+    <div id="userMenu" class="hp-user-menu" aria-hidden="true">
+      <button id="gotoProfile" class="hp-menu-item">Profile</button>
+      <button id="logoutBtn" class="hp-menu-item">Log out</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
