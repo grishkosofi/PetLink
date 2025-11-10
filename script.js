@@ -1,14 +1,11 @@
 // Minimal JS to navigate between the pages and handle login/signup -> homepage flow.
-// Stores a lightweight "session" in localStorage (email) and derives a display name
-// so the homepage can show a user name. Also provides a small user menu and simple
-// interactions for the demo.
+// Also includes demo "test accounts" autofill & fill+login support.
 
 (function () {
   // Utility: derive display name from email or fallback
   function displayNameFromEmail(email) {
     if (!email) return 'User';
     const before = email.split('@')[0] || email;
-    // replace separators with spaces and capitalize words
     return before.replace(/[._\-+]+/g, ' ')
         .split(' ')
         .map(s => s ? (s.charAt(0).toUpperCase() + s.slice(1)) : '')
@@ -37,17 +34,27 @@
     location.href = path;
   }
 
+  // Programmatic safe submit: prefer requestSubmit when available
+  function safeSubmitForm(form) {
+    if (!form) return;
+    if (typeof form.requestSubmit === 'function') {
+      form.requestSubmit();
+    } else {
+      // older fallback: trigger submit event, handlers that call preventDefault remain effective
+      const ev = new Event('submit', { bubbles: true, cancelable: true });
+      form.dispatchEvent(ev);
+    }
+  }
+
   // Attach handlers depending on which page is loaded
   document.addEventListener('DOMContentLoaded', function() {
-    // Index: toLogin / toSignup buttons already link using location in original markup,
-    // so nothing required here. But we keep anchors if present.
+    // navigation from index
     const toLogin = document.getElementById('toLogin');
     const toSignup = document.getElementById('toSignup');
-
     if (toLogin) toLogin.addEventListener('click', () => { goTo('login.html'); });
     if (toSignup) toSignup.addEventListener('click', () => { goTo('signup.html'); });
 
-    // Login page handlers
+    // Login form handling
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
       loginForm.addEventListener('submit', function(e){
@@ -64,7 +71,7 @@
       });
     }
 
-    // Signup page handlers
+    // Signup form
     const signupForm = document.getElementById('signupForm');
     if (signupForm) {
       signupForm.addEventListener('submit', function(e){
@@ -80,15 +87,50 @@
       });
     }
 
-    // Buttons that navigate from login/signup to the other
+    // navigation buttons between login/signup
     const gotoSignup = document.getElementById('gotoSignup');
     if (gotoSignup) gotoSignup.addEventListener('click', () => { goTo('signup.html'); });
 
     const gotoLogin = document.getElementById('gotoLogin');
     if (gotoLogin) gotoLogin.addEventListener('click', () => { goTo('login.html'); });
 
+    // Test accounts autofill handlers (login page)
+    const testFillBtns = document.querySelectorAll('.test-fill');
+    const testFillLoginBtns = document.querySelectorAll('.test-fill-login');
+
+    function fillLoginFields(email, password) {
+      const emailInput = document.getElementById('email');
+      const passInput = document.getElementById('password');
+      if (emailInput) emailInput.value = email || '';
+      if (passInput) passInput.value = password || '';
+    }
+
+    testFillBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const email = btn.getAttribute('data-email') || '';
+        const pass = btn.getAttribute('data-password') || '';
+        fillLoginFields(email, pass);
+      });
+    });
+
+    testFillLoginBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const email = btn.getAttribute('data-email') || '';
+        const pass = btn.getAttribute('data-password') || '';
+        fillLoginFields(email, pass);
+        // perform the same flow as hitting submit
+        // use safeSubmitForm to trigger handlers
+        if (loginForm) {
+          safeSubmitForm(loginForm);
+        } else {
+          // fallback: if no form, just save session and redirect
+          saveSession(email);
+          goTo('homepage.html');
+        }
+      });
+    });
+
     // Homepage specific behavior
-    // If we're on homepage.html, show user's name and wire up controls.
     const onHomepage = location.pathname.endsWith('homepage.html') || location.href.endsWith('homepage.html');
     if (onHomepage) {
       const email = getSessionEmail();
@@ -159,7 +201,6 @@
         nextCare = defaultNextCare;
       }
 
-      // If there is no nextCare saved (first time), set default
       if (!nextCare) {
         nextCare = defaultNextCare;
         localStorage.setItem('petlink_nextcare', JSON.stringify(nextCare));
@@ -179,7 +220,6 @@
       if (dismissCare) {
         dismissCare.addEventListener('click', () => {
           localStorage.removeItem('petlink_nextcare');
-          // simple UI feedback
           if (nextCareName) nextCareName.textContent = 'No upcoming care';
           if (nextCareTime) nextCareTime.textContent = '';
           if (nextCareIcon) nextCareIcon.textContent = '✅';

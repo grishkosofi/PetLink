@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
 <head>
@@ -47,6 +46,46 @@
 
           <button type="button" id="gotoSignup" class="btn btn-yellow full">Sign in</button>
         </form>
+
+        <!-- Test accounts list (demo-only) -->
+        <div class="test-accounts" aria-label="Test accounts for demo">
+          <div class="test-header">Test accounts (demo)</div>
+          <ul class="test-list" role="list">
+            <li class="test-item">
+              <div class="test-meta">
+                <strong>demo@example.com</strong>
+                <span class="test-pass">Test1234</span>
+              </div>
+              <div class="test-actions">
+                <button type="button" class="small-btn test-fill" data-email="demo@example.com" data-password="Test1234">Fill</button>
+                <button type="button" class="small-btn test-fill-login" data-email="demo@example.com" data-password="Test1234">Fill & Login</button>
+              </div>
+            </li>
+
+            <li class="test-item">
+              <div class="test-meta">
+                <strong>john.doe+pet@example.com</strong>
+                <span class="test-pass">petlover</span>
+              </div>
+              <div class="test-actions">
+                <button type="button" class="small-btn test-fill" data-email="john.doe+pet@example.com" data-password="petlover">Fill</button>
+                <button type="button" class="small-btn test-fill-login" data-email="john.doe+pet@example.com" data-password="petlover">Fill & Login</button>
+              </div>
+            </li>
+
+            <li class="test-item">
+              <div class="test-meta">
+                <strong>owner@petlink.test</strong>
+                <span class="test-pass">OwnerPass1</span>
+              </div>
+              <div class="test-actions">
+                <button type="button" class="small-btn test-fill" data-email="owner@petlink.test" data-password="OwnerPass1">Fill</button>
+                <button type="button" class="small-btn test-fill-login" data-email="owner@petlink.test" data-password="OwnerPass1">Fill & Login</button>
+              </div>
+            </li>
+          </ul>
+          <div class="test-note">These are demo accounts only. Do not use real production passwords here.</div>
+        </div>
 
         <p class="tiny">By creating an account, you agree to our <a href="#" class="muted">Terms of Service</a> and <a href="#" class="muted">Privacy Policy</a>.</p>
       </article>
