@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PetLink — Daily Care</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Scoped styles for Daily Care page (with pet selector) */
+    .dc-page { min-height:100vh; background: linear-gradient(180deg,#eaf9f3 0%, #f6d6dc 60%); padding:28px; display:flex; flex-direction:column; gap:20px; }
+    .dc-main { max-width:1100px; margin:0 auto; width:100%; display:grid; grid-template-columns: 1fr 420px; gap:28px; align-items:start; }
+    .dc-banner {
+      grid-column: 1 / -1;
+      background: linear-gradient(90deg, rgba(255,255,255,0.95), rgba(255,255,255,0.9));
+      border-radius:32px;
+      padding:18px 22px;
+      display:flex;
+      align-items:center;
+      gap:18px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.08);
+      justify-content:space-between;
+    }
+    .dc-title { font-size:28px; font-weight:800; color:var(--pink); margin:0; display:flex; align-items:center; gap:12px;}
+    .dc-avatar { width:64px; height:64px; border-radius:12px; overflow:hidden; background:white; display:flex; align-items:center; justify-content:center; }
+
+    /* Pet selector */
+    .pet-selector {
+      display:flex;
+      gap:12px;
+      align-items:center;
+      margin-left:8px;
+    }
+    .pet-selector select {
+      padding:8px 10px;
+      border-radius:10px;
+      border:1px solid #eee;
+      background:white;
+      font-weight:700;
+    }
+
+    /* Left: today's checklist */
+    .today-wrap { background:white; border-radius:18px; padding:18px; box-shadow: 0 22px 50px rgba(0,0,0,0.06); }
+    .today-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+    .today-list { display:flex; flex-direction:column; gap:12px; }
+
+    .task {
+      display:flex; align-items:center; gap:12px; background:#fff; padding:12px; border-radius:12px; box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+    }
+    .task .meta { flex:1; min-width:0; }
+    .task .title { font-weight:800; color:#222; }
+    .task .desc { color:var(--muted); font-size:13px; }
+    .task .time { font-weight:800; color:#333; margin-left:8px; }
+    .task .done { background:#e7fbf0; color:#0f6c53; padding:6px 10px; border-radius:999px; font-weight:800; }
+
+    /* Right: routines editor */
+    .routines-wrap { background:white; border-radius:18px; padding:18px; box-shadow: 0 22px 50px rgba(0,0,0,0.06); display:flex; flex-direction:column; gap:12px; }
+    .routine-item { display:flex; gap:8px; align-items:center; justify-content:space-between; padding:10px; border-radius:10px; background:#fafafa; }
+    .routine-item .info { flex:1; min-width:0; }
+    .small { font-size:13px; color:var(--muted); }
+
+    .form-row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .form-row input[type="text"], .form-row input[type="date"], .form-row input[type="time"], .form-row select {
+      padding:8px 10px; border-radius:8px; border:1px solid #eee; min-width:120px;
+    }
+    .btn { padding:10px 14px; border-radius:999px; border:0; cursor:pointer; font-weight:800; }
+    .btn-primary { background: linear-gradient(180deg,var(--pink) 0%, var(--pink-deep) 100%); color:white; }
+    .btn-ghost { background:white; border:1px solid #eee; }
+
+    .days { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+    .day-toggle { width:34px; height:34px; border-radius:999px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; background:#fff; border:1px solid #eee; }
+    .day-toggle.active { background:#ffd7de; color:#6b2e3a; box-shadow: 0 6px 12px rgba(203,84,105,0.06); }
+
+    .muted { color:var(--muted); font-size:13px; }
+
+    @media(max-width:960px){
+      .dc-main { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="dc-page">
+  <header class="dc-banner">
+    <div style="display:flex;gap:12px;align-items:center;">
+      <h1 class="dc-title">Daily Care</h1>
+
+      <!-- Pet selector: lets the user pick which pet's routines you're viewing/editing -->
+      <div class="pet-selector" aria-hidden="false">
+        <label for="petSelector" class="muted">Pet</label>
+        <select id="petSelector" aria-label="Choose pet"></select>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;align-items:center;">
+      <div class="dc-avatar"><img id="dcAvatar" src="images/default-pet.png" style="width:100%;height:100%;object-fit:cover;" /></div>
+      <!-- Changed: back to pets -->
+      <button id="backToPets" class="btn btn-ghost">Back to pets</button>
+    </div>
+  </header>
+
+  <main class="dc-main">
+    <!-- Left: Today's checklist -->
+    <section class="today-wrap" aria-labelledby="todayHeading">
+      <div class="today-header">
+        <div>
+          <div id="todayHeading" style="font-weight:800;font-size:18px;">Today's tasks</div>
+          <div class="muted" id="todaySubtitle"></div>
+        </div>
+
+        <div>
+          <button id="markAllDone" class="btn btn-primary">Mark all done</button>
+        </div>
+      </div>
+
+      <div id="todayList" class="today-list" aria-live="polite">
+        <!-- tasks injected here -->
+      </div>
+    </section>
+
+    <!-- Right: Routines editor -->
+    <aside class="routines-wrap" aria-labelledby="routinesHeading">
+      <div id="routinesHeading" style="font-weight:800;">Feeding & Medication schedules</div>
+      <div class="muted">Define routines (food, meds), times, days and period per pet.</div>
+
+      <div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
+        <label style="font-weight:700">Type & title</label>
+        <div class="form-row">
+          <select id="r_type" aria-label="type">
+            <option value="feeding">Feeding</option>
+            <option value="medication">Medication</option>
+            <option value="other">Other</option>
+          </select>
+          <input id="r_title" type="text" placeholder="Title e.g. Morning feed / Heartworm" />
+        </div>
+
+        <label style="font-weight:700">Details</label>
+        <div class="form-row">
+          <input id="r_details" type="text" placeholder="Food / medicine & dose (e.g. 2 scoops, 5 mg)" style="min-width:200px"/>
+          <input id="r_times" type="text" placeholder="Times (comma-separated HH:MM)" />
+        </div>
+
+        <label style="font-weight:700">Days</label>
+        <div class="days" id="daysRow" role="group" aria-label="Days of week">
+          <button type="button" data-day="0" class="day-toggle">Sun</button>
+          <button type="button" data-day="1" class="day-toggle">Mon</button>
+          <button type="button" data-day="2" class="day-toggle">Tue</button>
+          <button type="button" data-day="3" class="day-toggle">Wed</button>
+          <button type="button" data-day="4" class="day-toggle">Thu</button>
+          <button type="button" data-day="5" class="day-toggle">Fri</button>
+          <button type="button" data-day="6" class="day-toggle">Sat</button>
+        </div>
+
+        <div class="form-row" style="margin-top:8px;">
+          <label class="small">Start</label>
+          <input id="r_start" type="date" />
+          <label class="small">End</label>
+          <input id="r_end" type="date" />
+        </div>
+
+        <div style="display:flex;gap:8px;align-items:center;margin-top:8px;">
+          <button id="saveRoutine" class="btn btn-primary">Save routine</button>
+          <button id="clearForm" class="btn btn-ghost">Clear</button>
+        </div>
+      </div>
+
+      <hr style="border:none;height:1px;background:#f2f2f2;margin:12px 0;border-radius:2px">
+
+      <div id="routinesList" style="display:flex;flex-direction:column;gap:8px;max-height:360px;overflow:auto">
+        <!-- routines injected here -->
+      </div>
+    </aside>
+  </main>
+</div>
+
+<script>
+  (function(){
+    // Utilities
+    function q(name){ return new URLSearchParams(location.search).get(name); }
+    function safeParse(raw, fallback){ try { return raw ? JSON.parse(raw) : fallback; } catch(e){ return fallback; } }
+    function isoDate(d){ return d ? new Date(d).toISOString().slice(0,10) : null; }
+    function nowIso(){ return new Date().toISOString(); }
+    function pad(n){ return n < 10 ? '0'+n : ''+n; }
+
+    // DOM refs
+    const petSelector = document.getElementById('petSelector');
+    const dcAvatar = document.getElementById('dcAvatar');
+    const backToPets = document.getElementById('backToPets');
+    const todayList = document.getElementById('todayList');
+    const todaySubtitle = document.getElementById('todaySubtitle');
+    const markAllDone = document.getElementById('markAllDone');
+
+    const r_type = document.getElementById('r_type');
+    const r_title = document.getElementById('r_title');
+    const r_details = document.getElementById('r_details');
+    const r_times = document.getElementById('r_times');
+    const r_start = document.getElementById('r_start');
+    const r_end = document.getElementById('r_end');
+    const daysRow = document.getElementById('daysRow');
+    const saveRoutine = document.getElementById('saveRoutine');
+    const clearForm = document.getElementById('clearForm');
+    const routinesList = document.getElementById('routinesList');
+
+    // Helper to get pets from storage
+    function loadPets(){ return safeParse(localStorage.getItem('petlink_pets'), []); }
+
+    // Current pet id (can be switched via selector)
+    let currentPetId = q('id');
+
+    // If no pet in query param, try to pick the first pet in storage
+    const allPets = loadPets();
+    if (!currentPetId) {
+      if (allPets && allPets.length) {
+        currentPetId = allPets[0].id;
+        // optional: reflect selection in URL without reloading
+        history.replaceState(null, '', '?id=' + encodeURIComponent(currentPetId));
+      } else {
+        // no pets at all -> send to create flow
+        location.href = 'create-pet.html';
+        return;
+      }
+    }
+
+    // Fill pet selector
+    function populatePetSelector() {
+      const pets = loadPets();
+      petSelector.innerHTML = '';
+      pets.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = p.name || ('Pet ' + p.id);
+        petSelector.appendChild(opt);
+      });
+      // set selected
+      petSelector.value = currentPetId || (pets[0] && pets[0].id) || '';
+      updatePetDisplay();
+    }
+
+    // Update header avatar and page context for currentPetId
+    function updatePetDisplay() {
+      const pets = loadPets();
+      const pet = pets.find(p => p.id === currentPetId) || { name: 'Pet', image: 'images/default-pet.png' };
+      dcAvatar.src = pet.image || 'images/default-pet.png';
+      // update URL param without reload
+      history.replaceState(null, '', '?id=' + encodeURIComponent(currentPetId));
+      // re-render lists for selected pet
+      renderRoutines();
+      renderToday();
+    }
+
+    petSelector.addEventListener('change', (e) => {
+      currentPetId = e.target.value;
+      updatePetDisplay();
+    });
+
+    // Back to pets button
+    backToPets.addEventListener('click', () => {
+      location.href = 'my-pets.html';
+    });
+
+    // Storage key helpers (per-pet)
+    function routinesKey(pid){ return 'petlink_care_' + pid; }
+    function logKey(pid){ return 'petlink_care_log_' + pid; }
+
+    function loadRoutines(pid){ return safeParse(localStorage.getItem(routinesKey(pid)), []); }
+    function saveRoutines(pid, arr){ localStorage.setItem(routinesKey(pid), JSON.stringify(arr)); }
+    function loadLog(pid){ return safeParse(localStorage.getItem(logKey(pid)), []); }
+    function saveLog(pid, arr){ localStorage.setItem(logKey(pid), JSON.stringify(arr)); }
+
+    // Build occurrences for a date for a given pet
+    function getOccurrencesForDate(pid, dateObj){
+      const routines = loadRoutines(pid);
+      const day = dateObj.getDay(); // 0 Sun .. 6 Sat
+      const dateISO = dateObj.toISOString().slice(0,10);
+      const occurrences = [];
+      routines.forEach(r => {
+        const start = r.start || null;
+        const end = r.end || null;
+        if (start && dateISO < start) return;
+        if (end && dateISO > end) return;
+        if (r.days && r.days.length && r.days.indexOf(day) === -1) return;
+        const times = (r.times || []).map(t => t.trim()).filter(Boolean);
+        times.forEach(t => {
+          let hhmm = t;
+          if (/^\d:\d/.test(hhmm)) { hhmm = '0' + hhmm; }
+          const dt = new Date(dateISO + 'T' + hhmm + ':00');
+          if (isNaN(dt)) return;
+          occurrences.push({
+            occurrenceId: r.id + '::' + dateISO + '::' + hhmm,
+            routineId: r.id,
+            title: r.title || (r.type === 'feeding' ? 'Feeding' : (r.type === 'medication' ? 'Medication' : 'Care')),
+            type: r.type,
+            details: r.details || '',
+            datetimeISO: dt.toISOString()
+          });
+        });
+      });
+      occurrences.sort((a,b) => new Date(a.datetimeISO) - new Date(b.datetimeISO));
+      return occurrences;
+    }
+
+    // Check done status for an occurrence for this pet
+    function isDone(pid, occurrenceId){
+      const log = loadLog(pid);
+      return log.some(e => e.occurrenceId === occurrenceId);
+    }
+
+    // Mark an occurrence done for this pet
+    function markDone(pid, occurrence){
+      const log = loadLog(pid);
+      log.push({ id: 'cl_' + Date.now(), occurrenceId: occurrence.occurrenceId, routineId: occurrence.routineId, doneAt: nowIso(), datetimeISO: occurrence.datetimeISO });
+      saveLog(pid, log);
+      updateNextCareForPet(pid);
+      renderToday();
+    }
+
+    // Mark all occurrences for today done for current pet
+    function markAllTodayDone(pid){
+      const occ = getOccurrencesForDate(pid, new Date());
+      const log = loadLog(pid);
+      occ.forEach(o => {
+        if (!log.some(e => e.occurrenceId === o.occurrenceId)) {
+          log.push({ id: 'cl_' + Date.now() + Math.random().toString(36).slice(2), occurrenceId: o.occurrenceId, routineId: o.routineId, doneAt: nowIso(), datetimeISO: o.datetimeISO });
+        }
+      });
+      saveLog(pid, log);
+      updateNextCareForPet(pid);
+      renderToday();
+    }
+
+    // Find next upcoming occurrence for a pet and store petlink_nextcare
+    function getNextUpcomingForPet(pid){
+      const now = new Date();
+      const all = [];
+      for (let i=0;i<15;i++){
+        const d = new Date(); d.setDate(d.getDate() + i);
+        getOccurrencesForDate(pid, d).forEach(o => all.push(o));
+      }
+      const log = loadLog(pid);
+      for (let i=0;i<all.length;i++){
+        const a = all[i];
+        if (new Date(a.datetimeISO) <= now) continue;
+        if (!log.some(e => e.occurrenceId === a.occurrenceId)) return a;
+      }
+      return null;
+    }
+
+    function updateNextCareForPet(pid){
+      const pet = loadPets().find(p=>p.id===pid) || {};
+      const next = getNextUpcomingForPet(pid);
+      if (!next) {
+        // If no upcoming, remove snapshot only if it belongs to this pet
+        try {
+          const ncRaw = localStorage.getItem('petlink_nextcare');
+          if (ncRaw) {
+            const nc = JSON.parse(ncRaw);
+            if (nc && nc.petId === pid) localStorage.removeItem('petlink_nextcare');
+          }
+        } catch(e){}
+        return;
+      }
+      const display = {
+        petId: pid,
+        name: pet.name || '',
+        title: next.title,
+        datetimeISO: next.datetimeISO,
+        timeLabel: (new Date(next.datetimeISO)).toLocaleString(undefined, { hour:'numeric', minute:'2-digit', month:'short', day:'numeric' })
+      };
+      localStorage.setItem('petlink_nextcare', JSON.stringify(display));
+      return display;
+    }
+
+    // Routines UI rendering (for currentPetId)
+    function renderRoutines(){
+      const pid = currentPetId;
+      const routines = loadRoutines(pid) || [];
+      routinesList.innerHTML = '';
+      routines.forEach(r => {
+        const el = document.createElement('div');
+        el.className = 'routine-item';
+        const info = document.createElement('div'); info.className = 'info';
+        const title = document.createElement('div'); title.style.fontWeight = '800'; title.textContent = (r.title || r.type);
+        const small = document.createElement('div'); small.className = 'small';
+        small.textContent = (r.details || '') + ' • times: ' + (r.times ? r.times.join(', ') : '-') + ' • days: ' + (r.days && r.days.length ? r.days.map(d=>['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]).join(', ') : 'every day');
+        info.appendChild(title); info.appendChild(small);
+
+        const actions = document.createElement('div');
+        actions.style.display = 'flex'; actions.style.gap = '8px';
+        const edit = document.createElement('button'); edit.className = 'btn btn-ghost'; edit.textContent = 'Edit';
+        const del = document.createElement('button'); del.className = 'btn'; del.textContent = 'Delete'; del.style.background = '#ef617f'; del.style.color = '#fff';
+
+        edit.addEventListener('click', () => {
+          r_type.value = r.type || 'feeding';
+          r_title.value = r.title || '';
+          r_details.value = r.details || '';
+          r_times.value = (r.times || []).join(', ');
+          r_start.value = r.start || '';
+          r_end.value = r.end || '';
+          Array.from(daysRow.querySelectorAll('.day-toggle')).forEach(b => {
+            const d = Number(b.getAttribute('data-day'));
+            b.classList.toggle('active', r.days && r.days.indexOf(d) !== -1);
+          });
+          saveRoutine.dataset.editing = r.id;
+          saveRoutine.textContent = 'Update';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        del.addEventListener('click', () => {
+          if (!confirm('Delete this routine?')) return;
+          const arr = loadRoutines(pid).filter(x => x.id !== r.id);
+          saveRoutines(pid, arr);
+          renderRoutines();
+          updateNextCareForPet(pid);
+          renderToday();
+        });
+
+        actions.appendChild(edit);
+        actions.appendChild(del);
+        el.appendChild(info);
+        el.appendChild(actions);
+        routinesList.appendChild(el);
+      });
+    }
+
+    // Today's tasks rendering
+    function renderToday(){
+      const pid = currentPetId;
+      const occ = getOccurrencesForDate(pid, new Date());
+      todayList.innerHTML = '';
+      if (!occ.length){
+        todaySubtitle.textContent = 'No tasks scheduled for today.';
+        return;
+      }
+      todaySubtitle.textContent = 'Scheduled: ' + occ.length + ' task(s)';
+      occ.forEach(o => {
+        const t = document.createElement('div'); t.className = 'task';
+        const cbWrap = document.createElement('div');
+        const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.tabIndex = 0;
+        const done = isDone(pid, o.occurrenceId);
+        checkbox.checked = done;
+        checkbox.addEventListener('change', () => {
+          if (checkbox.checked && !done) {
+            markDone(pid, o);
+          } else if (!checkbox.checked && done) {
+            const log = loadLog(pid).filter(e => e.occurrenceId !== o.occurrenceId);
+            saveLog(pid, log);
+            updateNextCareForPet(pid);
+            renderToday();
+          }
+        });
+        cbWrap.appendChild(checkbox);
+
+        const meta = document.createElement('div'); meta.className = 'meta';
+        const title = document.createElement('div'); title.className = 'title'; title.textContent = o.title + (o.type === 'feeding' && o.details ? ' — ' + o.details : '');
+        const desc = document.createElement('div'); desc.className = 'desc'; desc.textContent = (o.details && o.type !== 'feeding' ? o.details : '');
+        meta.appendChild(title); meta.appendChild(desc);
+
+        const right = document.createElement('div');
+        const time = document.createElement('div'); time.className = 'time'; time.textContent = (new Date(o.datetimeISO)).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        const status = document.createElement('div'); status.className = done ? 'done' : '';
+        if (done) status.textContent = 'Done';
+        right.appendChild(time);
+        if (done) right.appendChild(status);
+
+        t.appendChild(cbWrap);
+        t.appendChild(meta);
+        t.appendChild(right);
+        todayList.appendChild(t);
+      });
+    }
+
+    // Save routine (for current selected pet)
+    saveRoutine.addEventListener('click', () => {
+      const pid = currentPetId;
+      const type = r_type.value;
+      const title = r_title.value.trim();
+      const details = r_details.value.trim();
+      const times = (r_times.value || '').split(',').map(s => s.trim()).filter(Boolean);
+      const days = Array.from(daysRow.querySelectorAll('.day-toggle.active')).map(b => Number(b.getAttribute('data-day')));
+      const start = r_start.value || '';
+      const end = r_end.value || '';
+
+      if (!title) { alert('Please provide a title for the routine.'); return; }
+      if (!times || !times.length) { if (!confirm('No times specified — save without times?')) return; }
+
+      let routines = loadRoutines(pid);
+      const editingId = saveRoutine.dataset.editing;
+      if (editingId) {
+        routines = routines.map(r => {
+          if (r.id === editingId) {
+            return Object.assign({}, r, { type, title, details, times, days, start, end });
+          }
+          return r;
+        });
+        delete saveRoutine.dataset.editing;
+        saveRoutine.textContent = 'Save routine';
+      } else {
+        const id = 'r_' + Date.now();
+        routines.push({ id, type, title, details, times, days, start, end });
+      }
+      saveRoutines(pid, routines);
+      clearForm.click();
+      renderRoutines();
+      updateNextCareForPet(pid);
+      renderToday();
+    });
+
+    // Clear form
+    clearForm.addEventListener('click', () => {
+      r_type.value = 'feeding';
+      r_title.value = '';
+      r_details.value = '';
+      r_times.value = '';
+      r_start.value = '';
+      r_end.value = '';
+      delete saveRoutine.dataset.editing;
+      saveRoutine.textContent = 'Save routine';
+      Array.from(daysRow.querySelectorAll('.day-toggle')).forEach(b => b.classList.remove('active'));
+    });
+
+    // Days toggle wiring
+    Array.from(daysRow.querySelectorAll('.day-toggle')).forEach(b => {
+      b.addEventListener('click', () => b.classList.toggle('active'));
+    });
+
+    // Mark all today done wiring
+    markAllDone.addEventListener('click', () => {
+      if (!confirm('Mark all scheduled tasks for today as done?')) return;
+      markAllTodayDone(currentPetId);
+    });
+
+    // init
+    populatePetSelector();
+    renderRoutines();
+    renderToday();
+    updateNextCareForPet(currentPetId);
+
+    // auto-refresh for upcoming tasks
+    setInterval(() => renderToday(), 30000);
+
+    // expose helper globally
+    window.petlink_updateNextCareForPet = updateNextCareForPet;
+  })();
+</script>
+</body>
+</html>
