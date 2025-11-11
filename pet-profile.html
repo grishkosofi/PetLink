@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PetLink — Pet profile</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Scoped styles for the pet profile page */
+    .pp-page { min-height:100vh; background: linear-gradient(180deg,#eaf9f3 0%, #f6d6dc 60%); display:flex; flex-direction:column; gap:20px; padding:28px; }
+    .pp-main { max-width:980px; margin:0 auto; width:100%; display:flex; flex-direction:column; align-items:center; gap:18px; }
+    .pp-avatar {
+      width:140px; height:140px; border-radius:12px; overflow:hidden; background:#fff; display:flex; align-items:center; justify-content:center;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.08); margin-top:10px;
+    }
+    .pp-avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .pp-name { font-size:40px; color:var(--pink); font-weight:800; margin-top:10px; text-align:center; }
+    .pp-meta { color:#333; font-weight:700; margin-bottom:8px; text-align:center; }
+
+    .pp-actions { display:flex; gap:24px; margin-top:16px; }
+    .pp-btn {
+      background:#3ab69e; color:white; padding:14px 28px; border-radius:999px; font-weight:800; border:0; cursor:pointer;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+    }
+
+    .pp-nextcare {
+      margin-top:28px;
+      width:540px; max-width:92%;
+      background: #fff; border-radius:18px; padding:14px 18px; display:flex; align-items:center; gap:12px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.08);
+    }
+    .pp-nextcare .icon { width:44px; height:44px; border-radius:12px; background:linear-gradient(180deg,#fff,#f7f7f7); display:flex; align-items:center; justify-content:center; font-size:20px; }
+    .pp-nextcare .body { flex:1; }
+    .pp-nextcare .title { font-weight:800; color:#2d9d86; }
+    .pp-nextcare .desc { color:#333; margin-top:4px; }
+    .pp-nextcare .time { color:var(--muted); font-weight:700; margin-left:8px; }
+
+    .pp-footer { margin-top:36px; color:#b66d7b; font-weight:800; font-size:18px; text-align:center; }
+
+    @media(max-width:720px){
+      .pp-actions { flex-direction:column; gap:12px; width:100%; align-items:center; }
+      .pp-nextcare { width:100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="pp-page">
+    <header class="hp-header" style="max-width:980px; margin:0 auto;">
+      <div class="hp-brand">
+        <div class="hp-logo">
+          <div class="hp-logo-mark" title="PetLink logo (click to change)">
+            <img id="ppLogoImg" src="images/default-logo.png" alt="PetLink logo" />
+          </div>
+          <div class="hp-logo-text">PetLink</div>
+        </div>
+      </div>
+
+      <nav style="display:flex; gap:18px; align-items:center;">
+        <button id="ppMyPets" class="hp-menu-item" style="background:transparent;border:0;">My pets</button>
+        <button id="ppDaily" class="hp-menu-item" style="background:transparent;border:0;">Daily care</button>
+        <button id="ppHome" class="hp-menu-item" style="background:transparent;border:0;">Homepage</button>
+        <div class="hp-user" id="ppUser" role="button" aria-haspopup="true" aria-expanded="false" style="cursor:default;">
+          <div class="hp-user-name" id="ppUserName">Name_of_user</div>
+          <div class="hp-avatar" title="Profile">👤</div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="pp-main" role="main" id="ppMain">
+      <div class="pp-avatar" id="ppAvatar"><img src="images/default-pet.png" alt="pet avatar" /></div>
+      <div class="pp-name" id="ppName">Pet name</div>
+      <div class="pp-meta" id="ppBreedAge">breed, x years old</div>
+
+      <div class="pp-actions" role="toolbar" aria-label="Pet actions">
+        <button id="healthRecords" class="pp-btn">Health records</button>
+        <button id="appointments" class="pp-btn">Appointments</button>
+        <button id="memories" class="pp-btn">Memories</button>
+      </div>
+
+      <div class="pp-nextcare" id="ppNextCare" role="region" aria-live="polite" aria-label="Next care today">
+        <div class="icon" id="ppNextIcon">🍲</div>
+        <div class="body">
+          <div class="title">Next care today</div>
+          <div class="desc"><span id="ppNextName">Feeding</span> <span class="time" id="ppNextTime">9 am</span></div>
+        </div>
+        <button id="ppDismiss" title="Dismiss" style="background:transparent;border-radius:50%;border:1px solid #eee;padding:8px;cursor:pointer;">✕</button>
+      </div>
+
+      <div class="pp-footer">Love & Care</div>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    // Page-specific behavior: render pet by id from query param
+    (function(){
+      function q(name) {
+        const params = new URLSearchParams(location.search);
+        return params.get(name);
+      }
+      const petId = q('id');
+      const petsRaw = localStorage.getItem('petlink_pets');
+      let pets = [];
+      try { pets = petsRaw ? JSON.parse(petsRaw) : []; } catch(e){ pets = []; }
+
+      if (!petId) {
+        // No id -> go to my-pets
+        location.href = 'my-pets.html';
+      } else {
+        const pet = pets.find(p => p.id === petId);
+        if (!pet) {
+          // If pet not found, redirect to my-pets
+          location.href = 'my-pets.html';
+        } else {
+          document.getElementById('ppName').textContent = pet.name || 'Unnamed';
+          const breed = pet.breed || '';
+          const ageText = pet.ageMonths ? (function(m){
+            const years = Math.floor(m/12);
+            if (years >= 1) return years + (years === 1 ? ' year old' : ' years old');
+            return m + (m === 1 ? ' month old' : ' months old');
+          })(pet.ageMonths) : '';
+          document.getElementById('ppBreedAge').textContent = [breed, ageText].filter(Boolean).join(', ');
+          const avatar = document.querySelector('#ppAvatar img');
+          avatar.src = pet.image || 'images/default-pet.png';
+
+          // wire action buttons (placeholders)
+          document.getElementById('healthRecords').addEventListener('click', () => { alert('Health records — placeholder'); });
+          document.getElementById('appointments').addEventListener('click', () => { alert('Appointments — placeholder'); });
+          document.getElementById('memories').addEventListener('click', () => { alert('Memories — placeholder'); });
+        }
+      }
+
+      // next care area: read global demo nextcare (same key used elsewhere)
+      try {
+        const nc = JSON.parse(localStorage.getItem('petlink_nextcare') || 'null');
+        if (nc) {
+          document.getElementById('ppNextIcon').textContent = nc.icon || '🍽';
+          document.getElementById('ppNextName').textContent = nc.name || '';
+          document.getElementById('ppNextTime').textContent = nc.time || '';
+        }
+      } catch(e){ /* ignore */ }
+
+      const dismiss = document.getElementById('ppDismiss');
+      if (dismiss) {
+        dismiss.addEventListener('click', () => {
+          localStorage.removeItem('petlink_nextcare');
+          document.getElementById('ppNextName').textContent = 'No upcoming care';
+          document.getElementById('ppNextTime').textContent = '';
+          document.getElementById('ppNextIcon').textContent = '✅';
+        });
+      }
+
+      // header nav wiring
+      const navHome = document.getElementById('ppHome'); if (navHome) navHome.addEventListener('click', () => location.href='homepage.html');
+      const navMy = document.getElementById('ppMyPets'); if (navMy) navMy.addEventListener('click', () => location.href='my-pets.html');
+      const navDaily = document.getElementById('ppDaily'); if (navDaily) navDaily.addEventListener('click', () => alert('Daily care — placeholder'));
+      // show logged-in user name if available
+      const email = localStorage.getItem('petlink_user_email');
+      if (email) {
+        const nm = (email.split('@')[0] || 'User').replace(/[._\-+]+/g,' ');
+        const el = document.getElementById('ppUserName');
+        if (el) el.textContent = nm.split(' ').map(s=> s ? s[0].toUpperCase()+s.slice(1) : '').join(' ');
+      }
+    })();
+  </script>
+</body>
+</html>

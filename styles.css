@@ -1,5 +1,4 @@
 /* Shared styles for the three pages */
-/* Colors inspired by the provided mockups */
 :root{
   --pink:#ef617f;
   --pink-deep:#e24d70;
@@ -16,12 +15,62 @@
 }
 
 * { box-sizing: border-box; }
-html,body{ height:100%; margin:0; background:var(--page-bg); color:#222; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+/* Prevent horizontal overflow caused by using 100vw with visible scrollbars */
+html,body{ height:100%; margin:0; background:var(--page-bg); color:#222; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; overflow-x:hidden; }
 
 .page { display:flex; align-items:center; justify-content:center; padding:28px; min-height:100vh; }
 
 /* Hero area holds the background and the card */
 .hero { position:relative; width:100%; max-width:1200px; height:78vh; background:transparent; border-radius:6px; overflow:hidden; box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+
+/* Fullscreen variant: expands hero to fill viewport within page padding */
+.hero.fullscreen {
+  max-width: none;                   /* allow full width within page padding */
+  width: calc(100% - 56px);          /* page padding left+right = 56px (28px * 2) */
+  height: calc(100vh - 56px);        /* page padding top+bottom = 56px */
+  border-radius: 12px;               /* a bit larger radius like homepage */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  margin: 0 auto;
+}
+
+/* New page modifier: remove outer padding to allow hero to meet viewport edges */
+.page.full-bleed {
+  padding: 0;
+  min-height: 100vh;
+  align-items: stretch; /* let hero stretch the full height */
+  justify-content: flex-start;
+}
+
+/* Fullscreen hero: expand to occupy entire viewport area (no gutters),
+   and avoid clipping the card and its shadow by allowing visible overflow.
+   IMPORTANT: avoid width:100vw + translateX hacks (those often cause horizontal scrollbars).
+   Use left:0/right:0/width:100% so the layout doesn't extend past the viewport. */
+.hero.fullscreen {
+  position: relative;
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-width: none;
+  height: 100vh;               /* full viewport height */
+  border-radius: 0;            /* remove rounded corners so no white shows */
+  margin: 0;
+  box-shadow: none;            /* remove page-like shadow if you want edge-to-edge */
+  overflow: visible;           /* allow card and shadow to render without being clipped */
+  /* Reserve a little top space so card can't overlap the very top brand */
+  padding-top: 36px;
+}
+
+/* keep hero background svg covering the area */
+.hero-bg { position:absolute; inset:0; width:100%; height:100%; }
+
+/* Slight tweak so the floating card sits a little lower than exact middle on small screens */
+.card-wrap { top:52%; transform: translate(-50%,-52%); }
+
+/* Responsive: on small screens restore small radius if desired and keep no gutters */
+@media(max-width:720px) {
+  .hero.fullscreen { border-radius: 0; }
+  .card-wrap { top:50%; transform: translate(-50%,-50%); padding: 12px; }
+}
 
 /* background svg fills area */
 .hero-bg { position:absolute; inset:0; width:100%; height:100%; }
@@ -35,6 +84,14 @@ html,body{ height:100%; margin:0; background:var(--page-bg); color:#222; -webkit
 .card-wrap{ position:absolute; left:50%; top:48%; transform:translate(-50%,-50%); width:100%; max-width:var(--max-width); display:flex; justify-content:center; align-items:center; padding:12px; pointer-events:auto; }
 .card{ width:var(--card-width); background:var(--card-bg); border-radius:var(--radius); padding:28px 28px 18px; box-shadow: var(--shadow); text-align:center; }
 .form-card{ padding:28px 30px 22px; }
+
+/* Ensure the card itself can scroll internally on very short viewports
+   instead of letting a parent create a huge scroll track far from the viewport edge. */
+.hero.fullscreen .card{
+  max-height: calc(100vh - 140px); /* leave room for brand / footer / spacing */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
 
 /* Card content */
 .card h1{ margin:4px 0 8px; font-size:22px; color:var(--pink-deep); display:flex; align-items:center; justify-content:center; gap:8px; }
@@ -86,6 +143,10 @@ html,body{ height:100%; margin:0; background:var(--page-bg); color:#222; -webkit
   .logo{ font-size:36px; }
   .card{ width:92%; max-width:420px; }
 }
+
+/*!* for fullscreen variant on small screens consider slightly smaller subtraction *!*/
+/*.hero.fullscreen { width: calc(100% - 36px); height: calc(100vh - 36px); border-radius:10px; }*/
+
 
 /* -------------------------------
    Homepage styles

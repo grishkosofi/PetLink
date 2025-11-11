@@ -7,65 +7,48 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="page">
-    <!-- Background SVG: layered hills + subtle animals (stylized) -->
-    <section class="hero">
-      <svg class="hero-bg" viewBox="0 0 1400 800" preserveAspectRatio="none" aria-hidden="true">
-        <defs>
-          <linearGradient id="g1" x1="0" x2="1" y1="0" y2="0">
-            <stop offset="0" stop-color="#ff7f98"/>
-            <stop offset="0.5" stop-color="#fff"/>
-            <stop offset="1" stop-color="#9fe8d7"/>
-          </linearGradient>
-          <linearGradient id="g2" x1="0" x2="1" y1="0" y2="0">
-            <stop offset="0" stop-color="#e66a85"/>
-            <stop offset="1" stop-color="#d36b8a" stop-opacity="0.95"/>
-          </linearGradient>
-        </defs>
+<!-- NOTE: added full-bleed class here -->
+<div class="page full-bleed">
+  <section class="hero fullscreen">
+    <!-- ... unchanged SVG + content ... -->
+    <svg class="hero-bg" viewBox="0 0 1400 800" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="g1" x1="0" x2="1" y1="0" y2="0">
+          <stop offset="0" stop-color="#ff7f98"/>
+          <stop offset="0.5" stop-color="#fff"/>
+          <stop offset="1" stop-color="#9fe8d7"/>
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width="1400" height="240" fill="url(#g1)"></rect>
+      <g opacity="0.98">
+        <path d="M1400,220 C1000,120 800,120 700,160 C600,200 400,200 0,140 L0,800 L1400,800 Z" fill="#f08aa2" opacity="0.95"/>
+        <path d="M1400,320 C1000,260 800,260 700,300 C600,340 400,340 0,280 L0,800 L1400,800 Z" fill="#ffdfe3" opacity="0.9"/>
+        <path d="M1400,420 C1000,360 800,360 700,400 C600,440 400,440 0,380 L0,800 L1400,800 Z" fill="#9fe8d7" opacity="0.98"/>
+      </g>
+    </svg>
 
-        <!-- top sky -->
-        <rect x="0" y="0" width="1400" height="240" fill="url(#g1)"></rect>
+    <header class="brand">
+      <div class="logo">PetLink<span class="rtm">®</span></div>
+    </header>
 
-        <!-- layered hills:
-             We use several paths with soft drop shadows simulated by darker fills and blur via filter -->
-        <g filter="url(#fg)" opacity="0.98">
-          <path d="M1400,220 C1000,120 800,120 700,160 C600,200 400,200 0,140 L0,800 L1400,800 Z" fill="#f08aa2" opacity="0.95"/>
-          <path d="M1400,320 C1000,260 800,260 700,300 C600,340 400,340 0,280 L0,800 L1400,800 Z" fill="#ffdfe3" opacity="0.9"/>
-          <path d="M1400,420 C1000,360 800,360 700,400 C600,440 400,440 0,380 L0,800 L1400,800 Z" fill="#9fe8d7" opacity="0.98"/>
-        </g>
+    <main class="card-wrap" role="main">
+      <article class="card" aria-labelledby="welcomeTitle">
+        <h1 id="welcomeTitle"><span class="paw">🐾</span> Welcome to <span class="petlink">PetLink</span><span class="paw">🐾</span></h1>
+        <p class="subtitle">Link every moment of your pet's journey!</p>
 
-        <!-- subtle decorative pet silhouettes (very simple shapes) -->
-        <g fill="#ffffff" opacity="0.9">
-          <circle cx="120" cy="420" r="8"/>
-          <rect x="70" y="360" rx="8" ry="8" width="40" height="25" transform="rotate(-12 90 372)"/>
-          <path d="M125 200 q 30 -18 60 0 q -15 18 -60 0" fill="#fff"/>
-        </g>
+        <div class="cta-row">
+          <button id="toLogin" class="btn btn-pink">Log in</button>
+          <button id="toSignup" class="btn btn-yellow">Sign in</button>
+        </div>
 
-        <!-- large logo text area center top (not accessible text, decorative) -->
-      </svg>
+        <p class="tiny">By creating an account, you agree to our <a href="#" class="muted">Terms of Service</a> and <a href="#" class="muted">Privacy Policy</a>.</p>
+      </article>
+    </main>
 
-      <header class="brand">
-        <div class="logo">PetLink<span class="rtm">®</span></div>
-      </header>
+    <footer class="foot">All rights reserved</footer>
+  </section>
+</div>
 
-      <main class="card-wrap" role="main">
-        <article class="card" aria-labelledby="welcomeTitle">
-          <h1 id="welcomeTitle"><span class="paw">🐾</span> Welcome to <span class="petlink">PetLink</span><span class="paw">🐾</span></h1>
-          <p class="subtitle">Link every moment of your pet's journey!</p>
-
-          <div class="cta-row">
-            <button id="toLogin" class="btn btn-pink">Log in</button>
-            <button id="toSignup" class="btn btn-yellow">Sign in</button>
-          </div>
-
-          <p class="tiny">By creating an account, you agree to our <a href="#" class="muted">Terms of Service</a> and <a href="#" class="muted">Privacy Policy</a>.</p>
-        </article>
-      </main>
-
-      <footer class="foot">All rights reserved</footer>
-    </section>
-  </div>
-
-  <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 </html>

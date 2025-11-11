@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PetLink — Add Memory</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Scoped styles for Add Memory form */
+    .am-page { min-height:100vh; background: linear-gradient(180deg,#fff,#f6d6dc); padding:28px; display:flex; flex-direction:column; gap:20px; }
+    .am-main { max-width:720px; margin:0 auto; width:100%; background:transparent; display:flex; flex-direction:column; gap:18px; align-items:center; }
+    .am-banner { width:100%; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .am-title { font-size:38px; color:var(--pink); font-weight:800; text-align:center; width:100%; }
+    .am-form { width:100%; background:white; border-radius:14px; padding:18px; box-shadow: 0 18px 40px rgba(0,0,0,0.06); display:flex; flex-direction:column; gap:12px; }
+    .am-form label { font-weight:700; color:#333; font-size:14px; }
+    .am-form input[type="date"], .am-form textarea {
+      width:100%; padding:12px; border-radius:10px; border:1px solid #eee; font-size:14px; resize:vertical;
+    }
+    .am-row { display:flex; gap:12px; align-items:center; justify-content:space-between; }
+    .btn-save { background:#3ab69e; color:white; padding:10px 16px; border-radius:12px; border:0; font-weight:800; cursor:pointer; box-shadow: 0 12px 30px rgba(0,0,0,0.08); }
+    .btn-cancel { background:transparent; border:0; color:#333; font-weight:700; cursor:pointer; text-decoration:underline; }
+    .file-hint { color:var(--muted); font-size:13px; }
+    .preview { width:160px; height:120px; border-radius:10px; overflow:hidden; background:#f7f7f7; display:flex; align-items:center; justify-content:center; }
+    .preview img{ width:100%; height:100%; object-fit:cover; display:block; }
+  </style>
+</head>
+<body>
+<div class="am-page">
+  <header class="hp-header" style="max-width:980px; margin:0 auto;">
+    <div class="hp-brand">
+      <div class="hp-logo">
+        <div class="hp-logo-mark"><img src="images/default-logo.png" width="36" height="36" style="border-radius:8px;background:#fff"></div>
+        <div class="hp-logo-text">PetLink</div>
+      </div>
+    </div>
+
+    <nav style="display:flex; gap:18px; align-items:center;">
+      <button id="navMyPets" class="hp-menu-item" style="background:transparent;border:0;">My pets</button>
+      <button id="navDaily" class="hp-menu-item" style="background:transparent;border:0;">Daily care</button>
+      <button id="navHome" class="hp-menu-item" style="background:transparent;border:0;">Homepage</button>
+      <div class="hp-user" style="cursor:default;"><div class="hp-user-name" id="amUser">Name_of_user</div><div class="hp-avatar">👤</div></div>
+    </nav>
+  </header>
+
+  <main class="am-main" id="amMain">
+    <h1 class="am-title">Add Memory</h1>
+
+    <form id="memoryForm" class="am-form" aria-label="Add memory">
+      <label for="m_date">Date</label>
+      <input id="m_date" type="date" required />
+
+      <label for="m_text">Description</label>
+      <textarea id="m_text" rows="4" placeholder="Write about this moment..." required></textarea>
+
+      <div style="display:flex;gap:12px;align-items:center;justify-content:space-between;">
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <label class="file-hint">Add Photo</label>
+          <input id="m_file" type="file" accept="image/*" />
+        </div>
+        <div class="preview" id="mPreview" aria-hidden="true"><img id="mPreviewImg" src="" alt="" style="display:none"></div>
+      </div>
+
+      <div style="display:flex;gap:12px;align-items:center;justify-content:flex-end;margin-top:8px;">
+        <button type="button" id="cancelBtn" class="btn-cancel">Cancel</button>
+        <button type="submit" class="btn-save">Save memory</button>
+      </div>
+    </form>
+  </main>
+</div>
+
+<script>
+  (function(){
+    function q(name){ return new URLSearchParams(location.search).get(name); }
+    const petId = q('id');
+    if (!petId) { location.href = 'my-pets.html'; return; }
+
+    // load pet and user
+    let pets = [];
+    try { pets = JSON.parse(localStorage.getItem('petlink_pets') || '[]'); } catch(e){ pets = []; }
+    const pet = pets.find(p => p.id === petId);
+    if (!pet) { location.href = 'my-pets.html'; return; }
+
+    document.getElementById('amUser').textContent = (localStorage.getItem('petlink_user_email') || 'User').split('@')[0].replace(/[._\-+]+/g,' ').split(' ').map(s=>s? s[0].toUpperCase()+s.slice(1):'').join(' ');
+
+    const key = 'petlink_memories_' + petId;
+    function load() {
+      try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : []; } catch(e){ return []; }
+    }
+    function save(arr){ try { localStorage.setItem(key, JSON.stringify(arr)); } catch(e){} }
+
+    // preview image logic
+    const fileInput = document.getElementById('m_file');
+    const previewImg = document.getElementById('mPreviewImg');
+    const previewWrap = document.getElementById('mPreview');
+
+    fileInput.addEventListener('change', (e) => {
+      const f = e.target.files?.[0];
+      if (!f || !f.type.startsWith('image/')) {
+        previewImg.style.display = 'none';
+        previewWrap.setAttribute('aria-hidden','true');
+        return;
+      }
+      const r = new FileReader();
+      r.onload = function(ev){
+        previewImg.src = ev.target.result;
+        previewImg.style.display = 'block';
+        previewWrap.setAttribute('aria-hidden','false');
+      };
+      r.readAsDataURL(f);
+    });
+
+    // cancel -> go back to memories
+    document.getElementById('cancelBtn').addEventListener('click', () => {
+      location.href = 'memories.html?id=' + encodeURIComponent(petId);
+    });
+
+    // form submit
+    document.getElementById('memoryForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const date = document.getElementById('m_date').value;
+      const text = document.getElementById('m_text').value.trim();
+      const file = fileInput.files?.[0];
+
+      if (!text) { alert('Please enter a description.'); return; }
+
+      function finish(imageDataUrl){
+        const memories = load();
+        memories.push({
+          id: 'm_' + Date.now(),
+          date: date || (new Date()).toISOString().slice(0,10),
+          text: text,
+          image: imageDataUrl || ''
+        });
+        save(memories);
+        // after saving, go to memories list
+        location.href = 'memories.html?id=' + encodeURIComponent(petId);
+      }
+
+      if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function(ev){ finish(ev.target.result); };
+        reader.readAsDataURL(file);
+      } else {
+        finish(null);
+      }
+    });
+
+    // header nav
+    document.getElementById('navMyPets').addEventListener('click', () => location.href = 'my-pets.html');
+    document.getElementById('navDaily').addEventListener('click', () => alert('Daily care — placeholder'));
+    document.getElementById('navHome').addEventListener('click', () => location.href = 'homepage.html');
+  })();
+</script>
+</body>
+</html>

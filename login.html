@@ -5,10 +5,47 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>PetLink — Log In</title>
   <link rel="stylesheet" href="styles.css" />
+  <!-- Page-specific overrides to ensure true full-bleed hero and prevent the card from being clipped.
+      I should move these rules into styles.css  instead of keeping them inline. -->
+  <style>
+    /* remove outer white gutters for this page */
+    .page.full-bleed {
+      padding: 0;
+      min-height: 100vh;
+      align-items: stretch;
+      justify-content: flex-start;
+      background: transparent;
+    }
+
+    /* make the hero occupy the full viewport and avoid clipping the card */
+    .hero.fullscreen {
+      position: relative;
+      width: 100vw;
+      max-width: none;
+      left: 50%;
+      right: 50%;
+      transform: translateX(-50%);
+      height: 100vh;
+      border-radius: 0;       /* edge-to-edge */
+      margin: 0;
+      box-shadow: none;       /* keep it flush with viewport */
+      overflow: visible;      /* allow card's shadow to be visible */
+    }
+
+    /* lower the card slightly so it doesn't touch the very top and isn't clipped */
+    .card-wrap { top: 52%; transform: translate(-50%,-52%); }
+
+    /* small-screen tweaks */
+    @media (max-width: 720px) {
+      .hero.fullscreen { height: 100vh; border-radius: 0; }
+      .card-wrap { top: 50%; transform: translate(-50%,-50%); padding: 12px; }
+    }
+  </style>
 </head>
 <body>
-<div class="page">
-  <section class="hero">
+<!-- applied: full-bleed so the hero reaches the viewport edges -->
+<div class="page full-bleed">
+  <section class="hero fullscreen">
     <!-- Reuse same SVG background visuals -->
     <svg class="hero-bg" viewBox="0 0 1400 800" preserveAspectRatio="none" aria-hidden="true">
       <defs>

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PetLink — My Pets</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Page-specific tweaks for My Pets */
+    .mp-page { min-height:100vh; background: linear-gradient(180deg,#eaf9f3 0%, #f8dfe6 60%); display:flex; flex-direction:column; gap:24px; padding:28px; }
+    .mp-main { max-width:1200px; margin:0 auto; width:100%; }
+    .mp-title { font-size:56px; color:#114a43; margin:18px 6px; font-weight:800; }
+    .mypets-grid { display:flex; gap:28px; align-items:flex-start; flex-wrap:wrap; padding:24px 6px; }
+    .pet-card {
+      width:220px;
+      background: #fff;
+      border-radius:18px;
+      padding:20px;
+      text-align:center;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.06);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:12px;
+      cursor:pointer;
+    }
+    .pet-card .img-circle {
+      width:96px;
+      height:96px;
+      border-radius:50%;
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: #f3f6f6;
+      box-shadow: inset 0 -6px 12px rgba(0,0,0,0.02);
+    }
+    .pet-card .img-circle img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .pet-name{ font-size:22px; font-weight:800; color:#0f3b36; margin-top:8px; }
+    .pet-meta{ color:#2d9d86; font-weight:700; font-size:14px; }
+    .pet-age{ color:var(--muted); font-weight:700; font-size:14px; margin-top:6px; color:#2d9d86; }
+
+    .add-pet {
+      width:220px;
+      height:200px;
+      background: #ffe9ee;
+      border-radius:18px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      gap:8px;
+      color:var(--pink-deep);
+      font-weight:800;
+      box-shadow: 0 24px 48px rgba(0,0,0,0.06);
+      cursor:pointer;
+      border: none;
+    }
+
+    @media(max-width:900px){
+      .mypets-grid{ justify-content:center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="mp-page">
+    <header class="hp-header" style="max-width:1200px; margin:0 auto;">
+      <div class="hp-brand">
+        <div class="hp-logo">
+          <div class="hp-logo-mark" title="PetLink logo (click to change)">
+            <img id="mpLogoImg" src="images/default-logo.png" alt="PetLink logo" />
+          </div>
+          <div class="hp-logo-text">PetLink</div>
+        </div>
+      </div>
+
+      <nav style="display:flex; gap:24px; align-items:center;">
+        <button id="navDaily" class="hp-menu-item" style="background:transparent;border:0;">Daily care</button>
+        <button id="navHome" class="hp-menu-item" style="background:transparent;border:0;">Homepage</button>
+        <div class="hp-user" id="mpUser" role="button" aria-haspopup="true" aria-expanded="false" style="cursor:default;">
+          <div class="hp-user-name" id="mpUserName">Name_of_user</div>
+          <div class="hp-avatar" title="Profile">👤</div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="mp-main">
+      <h1 class="mp-title">My Pets</h1>
+
+      <section id="petsGrid" class="mypets-grid" aria-live="polite" aria-label="List of pets">
+        <!-- JS will populate pet cards here; last card will be Add Pet -->
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PetLink — Health records</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Scoped styles for the Health Records page */
+    .hr-page { min-height:100vh; background: linear-gradient(180deg,#dff8f2 0%, #f6d7df 60%); padding:28px; display:flex; flex-direction:column; gap:20px; }
+    .hr-main { max-width:980px; margin:0 auto; width:100%; display:flex; flex-direction:column; gap:18px; }
+    .hr-banner {
+      background: linear-gradient(90deg, rgba(255,255,255,0.9), rgba(255,255,255,0.8));
+      border-radius:32px;
+      padding:18px 22px;
+      display:flex;
+      align-items:center;
+      gap:18px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.08);
+    }
+    .hr-title { font-size:32px; font-weight:800; color:var(--pink); margin:0; flex:1; display:flex; align-items:center; gap:18px; }
+    .hr-avatar { width:72px; height:72px; border-radius:12px; overflow:hidden; background:white; display:flex; align-items:center; justify-content:center; }
+    .hr-tabs { display:flex; gap:18px; padding:8px 0 0 6px; align-items:center; border-bottom:1px solid rgba(0,0,0,0.06); }
+    .hr-tab { padding:12px 8px; cursor:pointer; color:#222; font-weight:700; background:transparent; border:0; border-bottom:3px solid transparent; }
+    .hr-tab.active { border-color: #222; }
+
+    .hr-edit { margin-left:auto; display:flex; gap:8px; align-items:center; }
+    .hr-edit .btn { padding:8px 12px; border-radius:999px; border:0; cursor:pointer; background:white; box-shadow:0 6px 18px rgba(0,0,0,0.06); }
+
+    .records-list { display:flex; flex-direction:column; gap:16px; margin-top:18px; }
+    .record {
+      background:white; border-radius:18px; padding:14px 18px; box-shadow: 0 22px 50px rgba(0,0,0,0.06); display:flex; align-items:center; gap:12px; justify-content:space-between;
+    }
+    .record-left { display:flex; align-items:center; gap:12px; min-width:0; }
+    .record .icon { width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#fff,#f4f4f4); }
+    .record .meta { min-width:0; }
+    .record .meta .title { font-weight:800; color:#222; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .record .meta .date { color:var(--muted); font-size:13px; margin-top:6px; }
+
+    .record .status { font-weight:800; padding:8px 14px; border-radius:999px; min-width:84px; text-align:center; display:inline-block; }
+    .status-upcoming { background: #fff4cf; color: #b37c16; }
+    .status-done { background:#e7fbf0; color:#0f6c53; }
+
+    /* status toggle button (visible on the right of each record) */
+    .status-toggle {
+      margin-left:12px;
+      background:transparent;
+      border:1px solid rgba(0,0,0,0.06);
+      padding:8px 10px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:800;
+      min-width:56px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+      background: #fff;
+    }
+    .status-toggle:focus { outline:2px solid rgba(0,0,0,0.08); }
+
+    /* small add-record form */
+    .add-record { background:#fff; border-radius:12px; padding:12px; display:flex; gap:8px; align-items:center; box-shadow: 0 12px 30px rgba(0,0,0,0.04); }
+    .add-record input, .add-record select { padding:8px 10px; border-radius:8px; border:1px solid #eee; }
+    .add-record .btn { background:linear-gradient(180deg,var(--pink) 0%, var(--pink-deep) 100%); color:white; padding:10px 12px; border-radius:8px; border:0; cursor:pointer; font-weight:800; }
+
+    /* Back button styling (matches other banner controls) */
+    .btn-back {
+      padding:8px 12px;
+      border-radius:999px;
+      border:0;
+      cursor:pointer;
+      background:white;
+      box-shadow:0 6px 18px rgba(0,0,0,0.06);
+      font-weight:700;
+    }
+
+    /* small responsive */
+    @media(max-width:720px){
+      .hr-banner { flex-direction:column; align-items:flex-start; padding:12px; gap:10px; }
+      .hr-title { font-size:20px; }
+      .hr-tabs { flex-wrap:wrap; gap:8px; }
+      .record { flex-direction:column; align-items:flex-start; gap:8px; }
+      .record .status { align-self:flex-end; }
+    }
+  </style>
+</head>
+<body>
+<div class="hr-page">
+  <header class="hp-header" style="max-width:980px; margin:0 auto;">
+    <div class="hp-brand">
+      <div class="hp-logo">
+        <div class="hp-logo-mark" title="PetLink logo"><img src="images/default-logo.png" width="36" height="36" style="border-radius:8px;background:#fff"></div>
+        <div class="hp-logo-text">PetLink</div>
+      </div>
+    </div>
+    <nav style="display:flex; gap:18px; align-items:center;">
+      <button id="navMyPets" class="hp-menu-item" style="background:transparent;border:0;">My pets</button>
+      <button id="navDaily" class="hp-menu-item" style="background:transparent;border:0;">Daily care</button>
+      <button id="navHome" class="hp-menu-item" style="background:transparent;border:0;">Homepage</button>
+      <div class="hp-user" style="cursor:default;"><div class="hp-user-name" id="hrUser">Name_of_user</div><div class="hp-avatar">👤</div></div>
+    </nav>
+  </header>
+
+  <main class="hr-main" id="hrMain">
+    <div class="hr-banner" role="banner">
+      <h2 class="hr-title">Health records <span id="hrPetName" style="margin-left:8px;color:#114a43;font-weight:800"></span></h2>
+      <div class="hr-avatar"><img id="hrAvatarImg" src="images/default-pet.png" alt="pet avatar" style="width:100%;height:100%;object-fit:cover"></div>
+
+      <!-- Back to profile button -->
+      <div class="hr-edit" aria-hidden="false">
+        <button id="btnBackProfile" class="btn-back" title="Back to profile">Back to profile</button>
+
+        <!-- Edit button remains -->
+        <button id="btnEdit" class="btn" title="Edit">Edit ✎</button>
+      </div>
+    </div>
+
+    <nav class="hr-tabs" role="tablist" aria-label="Health sections">
+      <button class="hr-tab active" data-section="vaccinations" role="tab" aria-selected="true">Vaccinations</button>
+      <button class="hr-tab" data-section="medication" role="tab">Medication</button>
+      <button class="hr-tab" data-section="vet" role="tab">Vet Visits</button>
+      <button class="hr-tab" data-section="allergies" role="tab">Allergies</button>
+      <button class="hr-tab" data-section="weight" role="tab">Weight</button>
+    </nav>
+
+    <section id="recordsArea">
+      <div id="recordsList" class="records-list" aria-live="polite"></div>
+
+      <div id="addRecordWrap" style="margin-top:10px; display:none;">
+        <form id="addRecordForm" class="add-record" aria-label="Add health record">
+          <select id="recType" required>
+            <option value="vaccinations">Vaccination</option>
+            <option value="medication">Medication</option>
+            <option value="vet">Vet Visit</option>
+            <option value="allergies">Allergy</option>
+            <option value="weight">Weight</option>
+          </select>
+          <input id="recTitle" placeholder="Title (e.g. Rabies booster)" required />
+          <input id="recDate" type="date" required />
+          <select id="recStatus">
+            <option value="upcoming">Upcoming</option>
+            <option value="done">Done</option>
+          </select>
+          <button type="submit" class="btn">Add</button>
+        </form>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+  (function(){
+    // Helpers
+    function q(name){ const p = new URLSearchParams(location.search); return p.get(name); }
+    const petId = q('id');
+    if (!petId) { location.href = 'my-pets.html'; return; }
+
+    const pets = (function(){ try { const r = localStorage.getItem('petlink_pets'); return r ? JSON.parse(r) : []; } catch(e){ return []; } })();
+    const pet = pets.find(p=>p.id===petId);
+    if (!pet) { location.href = 'my-pets.html'; return; }
+
+    // Show pet header
+    document.getElementById('hrPetName').textContent = pet.name || '';
+    const avatarImg = document.getElementById('hrAvatarImg');
+    avatarImg.src = pet.image || 'images/default-pet.png';
+    const email = localStorage.getItem('petlink_user_email');
+    if (email) document.getElementById('hrUser').textContent = email.split('@')[0].replace(/[._\-+]+/g,' ').split(' ').map(s=>s? s[0].toUpperCase()+s.slice(1):'').join(' ');
+
+    // Storage key per pet
+    const storageKey = 'petlink_health_' + petId;
+    function loadRecords() {
+      try {
+        const raw = localStorage.getItem(storageKey);
+        if (!raw) {
+          // provide sensible defaults for vaccinations section, similar to your mock
+          const defaults = {
+            vaccinations: [
+              { id: 'r1', title: 'Rabies booster', date: '2025-11-20', status:'upcoming' },
+              { id: 'r2', title: 'DHPP', date: '2025-08-14', status:'done' }
+            ],
+            medication: [],
+            vet: [],
+            allergies: [],
+            weight: []
+          };
+          localStorage.setItem(storageKey, JSON.stringify(defaults));
+          return defaults;
+        }
+        return JSON.parse(raw);
+      } catch(e){
+        return { vaccinations:[], medication:[], vet:[], allergies:[], weight:[] };
+      }
+    }
+    function saveRecords(obj) {
+      try { localStorage.setItem(storageKey, JSON.stringify(obj)); } catch(e){ console.error(e); }
+    }
+
+    let records = loadRecords();
+
+    // Tab handling and rendering
+    const tabs = Array.from(document.querySelectorAll('.hr-tab'));
+    let activeSection = 'vaccinations';
+    tabs.forEach(t => t.addEventListener('click', (e) => {
+      tabs.forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      activeSection = t.dataset.section;
+      renderList();
+    }));
+
+    function formatDate(d){
+      if(!d) return '';
+      try {
+        const dt = new Date(d + 'T00:00:00');
+        return dt.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
+      } catch(e){ return d; }
+    }
+
+    // Render list: each record now has an explicit toggle button so users
+    // can change status Upcoming <-> Done immediately (no need to toggle edit mode).
+    function renderList(){
+      const listWrap = document.getElementById('recordsList');
+      listWrap.innerHTML = '';
+      const arr = records[activeSection] || [];
+      if (arr.length === 0) {
+        const empty = document.createElement('div');
+        empty.style.color = 'var(--muted)';
+        empty.style.padding = '18px';
+        empty.textContent = 'No records yet.';
+        listWrap.appendChild(empty);
+      } else {
+        arr.forEach(r => {
+          const el = document.createElement('div');
+          el.className = 'record';
+          const left = document.createElement('div'); left.className = 'record-left';
+          const icon = document.createElement('div'); icon.className = 'icon';
+          icon.textContent = (activeSection === 'vaccinations' ? '💉' : activeSection === 'medication' ? '💊' : activeSection === 'vet' ? '🩺' : activeSection === 'allergies' ? '⚠️' : '⚖️');
+          const meta = document.createElement('div'); meta.className = 'meta';
+          const title = document.createElement('div'); title.className = 'title'; title.textContent = r.title || '';
+          const date = document.createElement('div'); date.className = 'date'; date.textContent = r.date ? 'due ' + formatDate(r.date) : '';
+          meta.appendChild(title); meta.appendChild(date);
+          left.appendChild(icon); left.appendChild(meta);
+
+          // Status badge (visual)
+          const statusBadge = document.createElement('div');
+          statusBadge.className = 'status ' + (r.status === 'done' ? 'status-done' : 'status-upcoming');
+          statusBadge.textContent = r.status === 'done' ? 'DONE' : 'UPCOMING';
+          statusBadge.setAttribute('aria-hidden', 'true');
+
+          // Explicit toggle button — accessible and obvious
+          const toggleBtn = document.createElement('button');
+          toggleBtn.className = 'status-toggle';
+          toggleBtn.type = 'button';
+          toggleBtn.setAttribute('aria-pressed', r.status === 'done' ? 'true' : 'false');
+          toggleBtn.title = r.status === 'done' ? 'Mark as upcoming' : 'Mark as done';
+          toggleBtn.textContent = r.status === 'done' ? 'Mark upcoming' : 'Mark done';
+
+          // Toggle handler: flip status, persist and re-render
+          toggleBtn.addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            r.status = r.status === 'done' ? 'upcoming' : 'done';
+            saveRecords(records);
+            renderList();
+          });
+
+          el.appendChild(left);
+
+          // Right side: status + toggle button
+          const rightWrap = document.createElement('div');
+          rightWrap.style.display = 'flex';
+          rightWrap.style.alignItems = 'center';
+          rightWrap.appendChild(statusBadge);
+          rightWrap.appendChild(toggleBtn);
+
+          el.appendChild(rightWrap);
+
+          listWrap.appendChild(el);
+        });
+      }
+    }
+
+    // Edit mode toggle / add record
+    const btnEdit = document.getElementById('btnEdit');
+    const addWrap = document.getElementById('addRecordWrap');
+    const addForm = document.getElementById('addRecordForm');
+    let editMode = false;
+    btnEdit.addEventListener('click', () => {
+      editMode = !editMode;
+      btnEdit.textContent = editMode ? 'Done' : 'Edit ✎';
+      addWrap.style.display = editMode ? 'block' : 'none';
+    });
+
+    addForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const type = document.getElementById('recType').value;
+      const title = document.getElementById('recTitle').value.trim();
+      const date = document.getElementById('recDate').value;
+      const status = document.getElementById('recStatus').value;
+      if (!title) return;
+      const id = 'r_' + Date.now();
+      records[type] = records[type] || [];
+      records[type].push({ id, title, date, status });
+      saveRecords(records);
+      addForm.reset();
+      renderList();
+    });
+
+    // nav wiring
+    document.getElementById('navMyPets').addEventListener('click', ()=> location.href='my-pets.html');
+    document.getElementById('navDaily').addEventListener('click', ()=> alert('Daily care — placeholder'));
+    document.getElementById('navHome').addEventListener('click', ()=> location.href='homepage.html');
+
+    // Back-to-profile button wiring
+    const backBtn = document.getElementById('btnBackProfile');
+    if (backBtn) {
+      backBtn.addEventListener('click', () => {
+        // navigate back to the pet profile for this pet
+        location.href = 'pet-profile.html?id=' + encodeURIComponent(petId);
+      });
+    }
+
+    // initial render
+    renderList();
+  })();
+</script>
+</body>
+</html>
